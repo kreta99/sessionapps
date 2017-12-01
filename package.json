@@ -1,0 +1,37 @@
+{
+  "name": "Sessionapps",
+  "version": "0.0.9",
+  "description": "Qlik Sense session apps demo",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kreta99/sessionapps.git"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "rpk",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "*",
+    "body-parser": "*",
+    "connect-flash": "*",
+    "cookie-parser": "^1.4.1",
+    "express": "*",
+    "express-handlebars": "*",
+    "express-messages": "*",
+    "express-session": "*",
+    "express-validator": "*",
+    "jspath": "^0.3.4",
+    "mongodb": "*",
+    "mongoose": "*",
+    "passport": "*",
+    "passport-http": "*",
+    "passport-local": "*",
+    "request": "^2.81.0",
+    "stringy": "^0.1.0",
+    "url": "^0.11.0",
+    "ws": "^3.2.0"
+  }
+}
