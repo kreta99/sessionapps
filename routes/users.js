@@ -2,13 +2,12 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-
 var User = require('../models/user');
+var config = require('../public/config.json');
 
 //Qlik
 var fs = require('fs');
 var request = require('request');
-//var jspath = require('jspath');
 
 const stringy = require('stringy');
 
@@ -27,15 +26,12 @@ router.get('/login', function(req, res){
 // Register User
 router.post('/register', function(req, res){
 	var name = req.body.name;
-	var email = req.body.email;
 	var username = req.body.username;
 	var password = req.body.password;
 	var password2 = req.body.password2;
 
 	// Validation
 	req.checkBody('name', 'Name is required').notEmpty();
-	req.checkBody('email', 'Email is required').notEmpty();
-	req.checkBody('email', 'Email is not valid').isEmail();
 	req.checkBody('username', 'Username is required').notEmpty();
 	req.checkBody('password', 'Password is required').notEmpty();
 	req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
@@ -49,7 +45,6 @@ router.post('/register', function(req, res){
 	} else {
 		var newUser = new User({
 			name: name,
-			email:email,
 			username: username,
 			password: password
 		});
@@ -101,28 +96,24 @@ router.post('/login',
   });
 
 router.get('/qlik', function(req, resmain){
-	console.log('Authenticating user: ' + req.user.username);
 	
-	//Qlik authentcation
+//Qlik authentcation
 var r = request.defaults({
   rejectUnauthorized: false,
-  host: 'win-derii8ceovp',
-  //cert: fs.readFileSync('client.pem'),
-  //key: fs.readFileSync('client_key.pem')
-  //on Windows can be pfx:
+  host: config.qs_host,
   pfx: fs.readFileSync('client.pfx')
 });
 
 //  Authenticate whatever user you want
 var b = JSON.stringify({
-  "UserDirectory": 'external',
+  "UserDirectory": config.qs_user_dir,
   "UserId": req.user.username,
-  "Attributes": [{'org': 'nodejs'}]
+  "Attributes": []
 });
 
 //  Get ticket for user - refer to the QPS API documentation for more information on different authentication methods.
 r.post({
-  uri:  'https://127.0.0.1:4243/qps/ticket?xrfkey=abcdefghijklmnop',
+  uri:  'https://'+ config.qs_host + ':4243/qps/ticket?xrfkey=abcdefghijklmnop',
   body: b,
   headers: {
     'x-qlik-xrfkey': 'abcdefghijklmnop',
@@ -134,20 +125,14 @@ function(err, res, body) {
   //  Consume ticket, set cookie response in our upgrade header against the proxy.
   var ticket = JSON.parse(body)['Ticket'];
   
-  console.log("Ticket: " + ticket);
-  console.log("Header: " + JSON.stringify(res.headers));
- 
-  r.get('https://127.0.0.1/hub/?qlikTicket=' + ticket, function(error, response, body) {
+  r.get('https://' + config.qs_host + '/hub/?qlikTicket=' + ticket, function(error, response, body) {
 
-    var cookies = response.headers['set-cookie'];
-	//extract cookie
-	q_session_id = cookies[0].substring(15, 51);
-	console.log("Session_id: " + q_session_id ); 
-	//set cookie in browser
-	resmain.cookie('X-Qlik-Session', q_session_id);
+    var cookie = String(response.headers['set-cookie']);
+	var q_cookie_name = cookie.split(";")[0].split("=")[0];
+	q_session_id = cookie.split(";")[0].split("=")[1];
 	
+	resmain.cookie(q_cookie_name, q_session_id, { domain: config.qs_host, httpOnly: true });
 	resmain.redirect('/');
-	
   })
 });	
 });  
@@ -157,13 +142,13 @@ router.get('/logout', function(req, res){
 //Logout form Qlik
 var r = request.defaults({
   rejectUnauthorized: false,
-  host: 'win-derii8ceovp',
+  host: config.qs_host,
   pfx: fs.readFileSync('client.pfx')
 });
 
 // delete user from proxy	
 	r.delete({
-	  uri:'https://127.0.0.1:4243/qps/user/external/'+req.user.username+'?xrfkey=abcdefghijklmnop', 
+	  uri:'https://' + config.qs_host + ':4243/qps/user/' + config.qs_user_dir + '/' +req.user.username + '?xrfkey=abcdefghijklmnop', 
 	  headers: {
     'x-qlik-xrfkey': 'abcdefghijklmnop',
     'content-type': 'application/json'}

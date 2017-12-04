@@ -14,7 +14,13 @@ var mongoose = require('mongoose');
 var https = require('https');
 var http = require('http');
 
-mongoose.connect('mongodb://127.0.0.1/loginapp',{useMongoClient: true});
+
+var config = require('./public/config.json');
+var baseurl = ( config.qs_issecure ? "https://" : "http://" ) + config.qs_host + (config.qs_port ? ":" + config.qs_port : "") + config.qs_vp + "resources";
+console.log("baseurl: " + baseurl);
+
+
+mongoose.connect('mongodb://'+config.qs_host+'/sessionapps',{useMongoClient: true});
 var db = mongoose.connection;
 
 var routes = require('./routes/index');
@@ -30,7 +36,7 @@ var app = express();
 
 // View Engine
 app.set('views', path.join(__dirname, 'views'));
-app.engine('handlebars', exphbs({defaultLayout:'layout'}));
+app.engine('handlebars', exphbs({defaultLayout:'layout', helpers:{res_baseurl:baseurl}}));
 app.set('view engine', 'handlebars');
 
 // BodyParser Middleware
@@ -43,7 +49,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Express Session
 app.use(session({
-	name: 'My-App',
+	name: 'SessionApps',
     secret: 'secret',
     saveUninitialized: true,
     resave: true
@@ -87,7 +93,7 @@ app.use('/', routes);
 app.use('/users', users);
 
 // Set Port
-app.set('port', (process.env.PORT || 4000));
+app.set('port', (process.env.PORT || config.sa_port));
 app.listen(app.get('port'), function(){
 console.log('Server started on port '+app.get('port'));
 });

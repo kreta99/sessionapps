@@ -5,12 +5,14 @@
 /*
  *    Fill in host and port for Qlik engine
  */
-//var prefix = window.location.pathname.substr( 0, window.location.pathname.toLowerCase().lastIndexOf( "/extensions" ) + 1 );
+
+$.getJSON("config.json", function(conf) {
+    
 var config = {
-	host: '127.0.0.1',
-	prefix: '/',
-	port: 443,
-	isSecure: true
+	host: conf.qs_host,
+	prefix: conf.qs_vp,
+	port: conf.qs_port,
+	isSecure: conf.qs_issecure
 };
 
 require.config( {
@@ -32,7 +34,7 @@ require( ["js/qlik"], function ( qlik ) {
 	});
 	
 const qlikScript = `
-LIB CONNECT TO 'Energy (win-derii8ceovp_qlikservice)';
+LIB CONNECT TO '$(db_conn)';
 
 LOAD DateandTime,
 	weekday(DateandTime) as [Weekday],
@@ -45,6 +47,8 @@ FROM energy.dbo."Power_usage"
 WHERE CONVERT(date, DateandTime) >= '$(date_from)' AND CONVERT(date, DateandTime) <= '$(date_to)';
 `;
 
+var db_conn = 'SET db_conn = ' + conf.qs_db_connection + ';';
+
 var hypercube_id = '';
 var rel_prog_interval = 250;
 
@@ -53,6 +57,7 @@ var date_to = $("#date_to").val();
 
 var date_from_script = 'SET date_from = ' + date_from + ';';
 var date_to_script = 'SET date_to = ' + date_to + ';';
+
 
 console.log("1date from: " + date_from_script + " date_to: " + date_to_script);
 
@@ -77,7 +82,7 @@ var chart_type = 'barchart';
 				}
             }, rel_prog_interval);
 	
-	sessionApp.setScript(date_from_script + date_to_script + qlikScript).then(function(){
+	sessionApp.setScript(db_conn + date_from_script + date_to_script + qlikScript).then(function(){
 	sessionApp.doReload().then(function() {
 	console.log("App reloaded:");
 	app_rel = true;
@@ -341,4 +346,5 @@ $("#logout").click(function() {
 	});
 });
 
+});
 });

@@ -23,7 +23,6 @@
     "express-messages": "*",
     "express-session": "*",
     "express-validator": "*",
-    "jspath": "^0.3.4",
     "mongodb": "*",
     "mongoose": "*",
     "passport": "*",
