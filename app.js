@@ -14,11 +14,8 @@ var mongoose = require('mongoose');
 var https = require('https');
 var http = require('http');
 
-
 var config = require('./public/config.json');
 var baseurl = ( config.qs_issecure ? "https://" : "http://" ) + config.qs_host + (config.qs_port ? ":" + config.qs_port : "") + config.qs_vp + "resources";
-console.log("baseurl: " + baseurl);
-
 
 mongoose.connect('mongodb://'+config.qs_host+'/sessionapps',{useMongoClient: true});
 var db = mongoose.connection;
@@ -30,9 +27,7 @@ var users = require('./routes/users');
 var app = express();
 
 //Qlik vars
-  q_app_id = '8bd39575-1aea-47d3-946e-590cfe6573e9';
-  q_sheet_id = '1ff88551-9c4d-41e0-b790-37f4c11d3df8';
-  q_session_id = '';
+q_session_id = '';
 
 // View Engine
 app.set('views', path.join(__dirname, 'views'));
@@ -86,6 +81,8 @@ app.use(function (req, res, next) {
   res.locals.error_msg = req.flash('error_msg');
   res.locals.error = req.flash('error');
   res.locals.user = req.user || null;
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 

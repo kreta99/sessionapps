@@ -28,11 +28,6 @@ require( ["js/qlik"], function ( qlik ) {
 		$( '#popup' ).hide();
 	} );
 
-	var global = qlik.getGlobal(config);
-	global.getAuthenticatedUser(function(reply){
-		console.log('User:'+reply.qReturn);
-	});
-	
 const qlikScript = `
 LIB CONNECT TO '$(db_conn)';
 
@@ -54,13 +49,8 @@ var rel_prog_interval = 250;
 
 var date_from = $("#date_from").val();
 var date_to = $("#date_to").val();
-
 var date_from_script = 'SET date_from = ' + date_from + ';';
 var date_to_script = 'SET date_to = ' + date_to + ';';
-
-
-console.log("1date from: " + date_from_script + " date_to: " + date_to_script);
-
 
 var chart_type = 'barchart';
 
@@ -73,8 +63,6 @@ var chart_type = 'barchart';
 			if (app_rel != true) {
             	sessionApp.global.getProgress(sessionApp.model.handle).then(function(progress){
 				rows_loaded = progress.qProgressData.qTransientProgressMessage.qMessageParameters;
-                console.log("Reload progress: " + rows_loaded);
-				console.log(progress);
 				$("#loading_msg").text("Loading data, please wait... " + rows_loaded);
 				});
 			}else {
@@ -84,7 +72,6 @@ var chart_type = 'barchart';
 	
 	sessionApp.setScript(db_conn + date_from_script + date_to_script + qlikScript).then(function(){
 	sessionApp.doReload().then(function() {
-	console.log("App reloaded:");
 	app_rel = true;
 	$("#loading_msg").hide();
 	//create table head
@@ -230,8 +217,7 @@ var chart_type = 'barchart';
 	
 		var qObject = reply.qHyperCube;
 		var day = '';
-		console.log(qObject);
-		
+
 		$.each(qObject.qDataPages[0].qMatrix, function() {
 			$("#EnWeekday").append("<tr><td>" + this[0].qText + "</td>" + "<td class=\"text-right\">" + this[1].qText + "</td></tr>");
 		});
@@ -253,7 +239,6 @@ $("#btn_get_data").click(function() {
 	$("#loading_msg").show();
 	
 	if (date_from && date_to) {
-		console.log("date from: " + date_from + " date_to: " + date_to);
 		
 		var app_rel = '';
 		var rows_loaded = '';
@@ -262,8 +247,6 @@ $("#btn_get_data").click(function() {
 			if (app_rel != true) {
             	sessionApp.global.getProgress(sessionApp.model.handle).then(function(progress){
 				rows_loaded = progress.qProgressData.qTransientProgressMessage.qMessageParameters;
-                console.log("Reload progress: " + rows_loaded);
-				console.log(progress);
 				$("#loading_msg").text("Loading data, please wait... " + rows_loaded);
 				});
 			}else {
@@ -274,17 +257,16 @@ $("#btn_get_data").click(function() {
 		
 		sessionApp.setScript(date_from_script + date_to_script + qlikScript).then(function(){
 			sessionApp.doReload().then(function() {
-			console.log("App reloaded:");
 			app_rel = true;
 			$("#loading_msg").hide();
 				sessionApp.getAppLayout(function(layout){
-					console.log(layout.qTitle + " app reloaded");
+					console.log(layout.qTitle + " reloaded");
 				});
 			});
 		});
 	} 
 	else { 
-	alert("Please select dates");
+	alert("Please select correct dates");
 	}
 });
 	
@@ -335,7 +317,6 @@ $("#btn_cost").click(function() {
 			vis.show("QV03"); 
 		}
 	);
-	
 });
 
 $("#logout").click(function() {

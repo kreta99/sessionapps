@@ -2,6 +2,7 @@
     "qs_host" : "win-derii8ceovp",
 	"qs_vp": "/",
 	"qs_port": 443,
+	"qs_restapi_port": 4243,
 	"qs_issecure": true,
     "qs_db_connection" : "Energy (win-derii8ceovp_qlikservice)",
 	"qs_user_dir": "EXTERNAL",

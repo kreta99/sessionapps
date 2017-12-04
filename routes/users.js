@@ -9,8 +9,8 @@ var config = require('../public/config.json');
 var fs = require('fs');
 var request = require('request');
 
-const stringy = require('stringy');
-
+var proxyurl = ( config.qs_issecure ? "https://" : "http://" ) + config.qs_host + (config.qs_restapi_port ? ":" + config.qs_restapi_port : "4243") + "/qps" + config.qs_vp;
+var huburl = ( config.qs_issecure ? "https://" : "http://" ) + config.qs_host + (config.qs_port ? ":" + config.qs_port : "") + config.qs_vp + "hub";
 //end Qlik
 
 // Register
@@ -96,7 +96,7 @@ router.post('/login',
   });
 
 router.get('/qlik', function(req, resmain){
-	
+
 //Qlik authentcation
 var r = request.defaults({
   rejectUnauthorized: false,
@@ -113,7 +113,7 @@ var b = JSON.stringify({
 
 //  Get ticket for user - refer to the QPS API documentation for more information on different authentication methods.
 r.post({
-  uri:  'https://'+ config.qs_host + ':4243/qps/ticket?xrfkey=abcdefghijklmnop',
+  uri:  proxyurl + 'ticket?xrfkey=abcdefghijklmnop',
   body: b,
   headers: {
     'x-qlik-xrfkey': 'abcdefghijklmnop',
@@ -125,11 +125,13 @@ function(err, res, body) {
   //  Consume ticket, set cookie response in our upgrade header against the proxy.
   var ticket = JSON.parse(body)['Ticket'];
   
-  r.get('https://' + config.qs_host + '/hub/?qlikTicket=' + ticket, function(error, response, body) {
+  r.get(huburl + '?qlikTicket=' + ticket, function(error, response, body) {
 
     var cookie = String(response.headers['set-cookie']);
 	var q_cookie_name = cookie.split(";")[0].split("=")[0];
 	q_session_id = cookie.split(";")[0].split("=")[1];
+	
+	console.log("User " + req.user.username + " connected to Qlik Sense");
 	
 	resmain.cookie(q_cookie_name, q_session_id, { domain: config.qs_host, httpOnly: true });
 	resmain.redirect('/');
@@ -148,20 +150,18 @@ var r = request.defaults({
 
 // delete user from proxy	
 	r.delete({
-	  uri:'https://' + config.qs_host + ':4243/qps/user/' + config.qs_user_dir + '/' +req.user.username + '?xrfkey=abcdefghijklmnop', 
+	  uri: proxyurl + 'user/' + config.qs_user_dir + '/' +req.user.username + '?xrfkey=abcdefghijklmnop', 
 	  headers: {
     'x-qlik-xrfkey': 'abcdefghijklmnop',
     'content-type': 'application/json'}
 	},
 	  function(error, res1, body){
-		console.log("User logged out");
+		console.log("User logged out from Qlik Sense");
 	});
 
 //Log out from smart dashboard
 	req.logout();
-
 	req.flash('success_msg', 'You are logged out');
-
 	res.redirect('/users/login');
 });
 

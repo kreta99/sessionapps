@@ -29,7 +29,6 @@
     "passport-http": "*",
     "passport-local": "*",
     "request": "^2.81.0",
-    "stringy": "^0.1.0",
     "url": "^0.11.0",
     "ws": "^3.2.0"
   }

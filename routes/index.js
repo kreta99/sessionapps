@@ -9,6 +9,8 @@ var request = require('request');
 
 // Get Dashboard
 router.get('/', ensureAuthenticated, function(req, res){
+
+var proxyurl = ( config.qs_issecure ? "https://" : "http://" ) + config.qs_host + (config.qs_restapi_port ? ":" + config.qs_restapi_port : "4243") + "/qps" + config.qs_vp;
 	
 //Qlik authentcation
 var r = request.defaults({
@@ -24,7 +26,7 @@ var b = JSON.stringify({
 });
 	// get sessions list from proxy	
 	r.get({
-	  uri:'https://' + config.qs_host + ':4243/qps/user/' + config.qs_user_dir + '/'+req.user.username+'?xrfkey=abcdefghijklmnop', 
+	  uri: proxyurl + 'user/' + config.qs_user_dir + '/' + req.user.username + '?xrfkey=abcdefghijklmnop', 
 	  body: b,
 	  headers: {
     'x-qlik-xrfkey': 'abcdefghijklmnop',
@@ -35,7 +37,7 @@ var b = JSON.stringify({
 		 
 		if (JSON.stringify(body).indexOf(q_session_id) !== -1) {
 			//User session exists
-			res.render('index',{ v_qses: q_session_id, v_app_id: q_app_id, v_sheet_id: q_sheet_id });
+			res.render('index',{ v_qses: q_session_id });
 		}
 		else {
 			//Requesting new user session...
@@ -47,7 +49,7 @@ var b = JSON.stringify({
 
 // Get Details
 router.get('/details', ensureAuthenticated, function(req, res){
-	res.render('index');
+	res.render('index',{ v_qses: q_session_id });
 });
 
 function ensureAuthenticated(req, res, next){
