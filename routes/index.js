@@ -10,7 +10,7 @@ var request = require('request');
 // Get Dashboard
 router.get('/', ensureAuthenticated, function(req, res){
 
-var proxyurl = ( config.qs_issecure ? "https://" : "http://" ) + config.qs_host + (config.qs_restapi_port ? ":" + config.qs_restapi_port : "4243") + "/qps" + config.qs_vp;
+var proxyurl = "https://" + config.qs_host + (config.qs_restapi_port ? ":" + config.qs_restapi_port : "4243") + "/qps" + config.qs_vp;
 	
 //Qlik authentcation
 var r = request.defaults({

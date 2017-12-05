@@ -9,7 +9,7 @@ var config = require('../public/config.json');
 var fs = require('fs');
 var request = require('request');
 
-var proxyurl = ( config.qs_issecure ? "https://" : "http://" ) + config.qs_host + (config.qs_restapi_port ? ":" + config.qs_restapi_port : "4243") + "/qps" + config.qs_vp;
+var proxyurl = "https://" + config.qs_host + (config.qs_restapi_port ? ":" + config.qs_restapi_port : "4243") + "/qps" + config.qs_vp;
 var huburl = ( config.qs_issecure ? "https://" : "http://" ) + config.qs_host + (config.qs_port ? ":" + config.qs_port : "") + config.qs_vp + "hub";
 //end Qlik
 
