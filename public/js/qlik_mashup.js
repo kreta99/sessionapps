@@ -28,29 +28,18 @@ require( ["js/qlik"], function ( qlik ) {
 		$( '#popup' ).hide();
 	} );
 
-const qlikScript = `
-LIB CONNECT TO '$(db_conn)';
 
-LOAD DateandTime,
-	weekday(DateandTime) as [Weekday],
-    Outlet,
-    Power;
-SQL SELECT DateandTime,
-    Outlet,
-    Power
-FROM energy.dbo."Power_usage"
-WHERE CONVERT(date, DateandTime) >= '$(date_from)' AND CONVERT(date, DateandTime) <= '$(date_to)';
-`;
-
-var db_conn = 'SET db_conn = ' + conf.qs_db_connection + ';';
+// var db_conn = 'SET db_conn = ' + conf.qs_db_connection + ';';
 
 var hypercube_id = '';
 var rel_prog_interval = 250;
 
 var date_from = $("#date_from").val();
 var date_to = $("#date_to").val();
-var date_from_script = 'SET date_from = ' + date_from + ';';
-var date_to_script = 'SET date_to = ' + date_to + ';';
+var date_from_script = 'SET date_from = ' + date_from + ';\n';
+var date_to_script = 'SET date_to = ' + date_to + ';\n';
+var qlikScript = date_from_script + date_to_script + conf.qs_script.join('\n');
+
 
 var chart_type = 'barchart';
 
@@ -69,8 +58,9 @@ var chart_type = 'barchart';
 				clearInterval(app_rel_prog);
 				}
             }, rel_prog_interval);
-	
-	sessionApp.setScript(db_conn + date_from_script + date_to_script + qlikScript).then(function(){
+			
+	console.log('Script of current session app is:\n' + qlikScript);
+	sessionApp.setScript(qlikScript).then(function(){
 	sessionApp.doReload().then(function() {
 	app_rel = true;
 	$("#loading_msg").hide();
@@ -84,7 +74,7 @@ var chart_type = 'barchart';
 	sessionApp.visualization.create(
 	'kpi',
 	[ 
-	{"qDef": {"qDef": "Count(DateandTime)", "qLabel": "# of rows"}}
+	{"qDef": {"qDef": "Count(dateandtime)", "qLabel": "# of rows"}}
 	],
 	{
 	"color": {"auto": false},
@@ -99,7 +89,7 @@ var chart_type = 'barchart';
 	sessionApp.visualization.create(
 	'kpi',
 	[ 
-	{"qDef": {"qDef": "Sum(Power)/60", "qLabel": "Energy Total [kWh]"}}
+	{"qDef": {"qDef": "Sum(power)/60", "qLabel": "Energy Total [kWh]"}}
 	],
 	{
 	"color": {"auto": false},
@@ -115,7 +105,7 @@ var chart_type = 'barchart';
 	sessionApp.visualization.create(
 	'kpi',
 	[ 
-	{"qDef": {"qDef": "Sum(Power)/60*" + price, "qLabel": "Energy Total Cost"}}
+	{"qDef": {"qDef": "Sum(power)/60*" + price, "qLabel": "Energy Total Cost"}}
 	],
 	{
 	"color": {"auto": false},
@@ -131,11 +121,11 @@ var chart_type = 'barchart';
 	sessionApp.visualization.create(
 	chart_type,
 	[
-	{"qDef": {"qFieldDefs": ["Outlet"], "qFieldLabels": ["Outlet"]}}, 
-	{"qDef": {"qDef": "Sum(Power)/60", "qLabel": "Energy [kWh]"}}
+	{"qDef": {"qFieldDefs": ["outlet"], "qFieldLabels": ["outlet"]}}, 
+	{"qDef": {"qDef": "Sum(power)/60", "qLabel": "Energy [kWh]"}}
 	],
 	{
-	"title":"Energy by outlet",
+	"title":"Energy by Outlet",
 	"color": {"auto": false, "mode": "byDimension"},
 	"legend": {"show": false}
 	}
@@ -149,8 +139,8 @@ var chart_type = 'barchart';
 	sessionApp.visualization.create(
 	'linechart',
 	[
-	{"qDef": {"qFieldDefs": ["DateandTime"], "qFieldLabels": ["Date and Time"]}}, 
-	{"qDef": {"qDef": "Sum(Power)", "qLabel": "Power [kW]"}}
+	{"qDef": {"qFieldDefs": ["dateandtime"], "qFieldLabels": ["Date and Time"]}}, 
+	{"qDef": {"qDef": "Sum(power)", "qLabel": "Power [kW]"}}
 	],
 	{
 	"title":"Power in time",
@@ -170,7 +160,7 @@ var chart_type = 'barchart';
 	],
 	"qDimensions": [
 		{
-			"qDef": {"qFieldDefs": ["Weekday"]},
+			"qDef": {"qFieldDefs": ["weekday"]},
 			"qNullSuppression": true,
 			"qOtherTotalSpec": {
 				"qOtherMode": "OTHER_OFF",
@@ -185,7 +175,7 @@ var chart_type = 'barchart';
 	],
 	"qMeasures": [
 		{
-			"qDef": {"qDef": "Round(Sum(Power)/60,0.01)"},
+			"qDef": {"qDef": "Round(Sum(power)/60,0.01)"},
 			"qLabel": "Energy",
 			"qLibraryId": null,
 			"qSortBy": {
@@ -235,6 +225,7 @@ $("#btn_get_data").click(function() {
 
 	var date_from_script = 'SET date_from = ' + date_from + ';';
 	var date_to_script = 'SET date_to = ' + date_to + ';';
+	var qlikScript = date_from_script + date_to_script + conf.qs_script.join('\n');
 	
 	$("#loading_msg").show();
 	
@@ -254,8 +245,8 @@ $("#btn_get_data").click(function() {
 				}
             }, rel_prog_interval);
 		
-		
-		sessionApp.setScript(date_from_script + date_to_script + qlikScript).then(function(){
+		console.log('Script of current session app is:\n' + qlikScript);
+		sessionApp.setScript(qlikScript).then(function(){
 			sessionApp.doReload().then(function() {
 			app_rel = true;
 			$("#loading_msg").hide();
@@ -286,7 +277,7 @@ $("#btn_chart_type").click(function() {
 	chart_type,
 	[
 	{"qDef": {"qFieldDefs": ["Outlet"], "qFieldLabels": ["Outlet"]}}, 
-	{"qDef": {"qDef": "Sum(Power)", "qLabel": "Energy [kWh]"}}
+	{"qDef": {"qDef": "Sum(power)", "qLabel": "Energy [kWh]"}}
 	],
 	{
 	"title":"Energy by outlet",
@@ -307,7 +298,7 @@ $("#btn_cost").click(function() {
 	sessionApp.visualization.create(
 	'kpi',
 	[ 
-	{"qDef": {"qDef": "Sum(Power)/60*" + price, "qLabel": "Energy Total Cost"}}
+	{"qDef": {"qDef": "Sum(power)/60*" + price, "qLabel": "Energy Total Cost"}}
 	],
 	{
 	"color": {"auto": false},
