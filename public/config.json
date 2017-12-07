@@ -1,10 +1,16 @@
 {
-    "qs_host" : "win-derii8ceovp",
+    "qs_host" : "qmi-qs-sessapp2",
 	"qs_vp": "/",
 	"qs_port": 443,
 	"qs_restapi_port": 4243,
 	"qs_issecure": true,
-    "qs_db_connection" : "Energy (win-derii8ceovp_qlikservice)",
 	"qs_user_dir": "EXTERNAL",
-	"sa_port": 4000
+	"sa_port": 4000,
+	"qs_script": [
+		"LIB CONNECT TO 'energydata';",
+		"LOAD *, Weekday(dateandtime) AS weekday;", 
+		"SQL SELECT dateandtime, outlet, power",
+		"FROM public.energydata",
+		"WHERE CAST(dateandtime AS Date) >= '$(date_from)' AND CAST(dateandtime AS Date) <= '$(date_to)';"
+	]
 }
