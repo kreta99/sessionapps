@@ -276,7 +276,7 @@ $("#btn_chart_type").click(function() {
 	sessionApp.visualization.create(
 	chart_type,
 	[
-	{"qDef": {"qFieldDefs": ["Outlet"], "qFieldLabels": ["Outlet"]}}, 
+	{"qDef": {"qFieldDefs": ["Outlet"], "qFieldLabels": ["outlet"]}}, 
 	{"qDef": {"qDef": "Sum(power)", "qLabel": "Energy [kWh]"}}
 	],
 	{
