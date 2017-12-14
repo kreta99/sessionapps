@@ -1,9 +1,9 @@
 {
     "qs_host" : "qmi-qs-sessapp2",
 	"qs_vp": "/",
-	"qs_port": 443,
+	"qs_port": 80,
 	"qs_restapi_port": 4243,
-	"qs_issecure": true,
+	"qs_issecure": false,
 	"qs_user_dir": "EXTERNAL",
 	"sa_port": 4000,
 	"qs_script": [
